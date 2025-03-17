@@ -1,0 +1,128 @@
+You are analyzing data for, a hot new social network.
+ 
+On Aquaintly, connections are always symmetrical. If a user Alice is connected to Bob, then Bob is also connected to Alice.
+ 
+You are given a sequential log of CONNECT and DISCONNECT events of the following form:
+- This event connects users Alice and Bob: ["CONNECT", "Alice", "Bob"]
+- This event disconnects the same users: ["DISCONNECT", "Bob", "Alice"] (order of users does not matter)
+ 
+We want to separate users based on their popularity (number of connections). To do this, write a function that takes in the event log and a number N and returns two collections:
+[Users with fewer than N connections], [Users with N or more connections]
+ 
+Example:
+events = [
+   ["CONNECT","Alice","Bob"],
+   ["DISCONNECT","Bob","Alice"],
+   ["CONNECT","Alice","Charlie"],
+   ["CONNECT","Dennis","Bob"],
+   ["CONNECT","Pam","Dennis"],
+   ["DISCONNECT","Pam","Dennis"],
+   ["CONNECT","Pam","Dennis"],
+   ["CONNECT","Edward","Bob"],
+   ["CONNECT","Dennis","Charlie"],
+   ["CONNECT","Alice","Nicole"],
+   ["CONNECT","Pam","Edward"],
+   ["DISCONNECT","Dennis","Charlie"],
+   ["CONNECT","Dennis","Edward"],
+   ["CONNECT","Charlie","Bob"]
+]
+ 
+Using a target of 3 connections, the expected results are:
+Users with less than 3 connections: ["Alice", "Charlie", "Pam", "Nicole"]
+Users with 3 or more connections: ["Dennis", "Bob", "Edward"]
+ 
+All test cases:
+grouping(events, 3) => [["Alice", "Charlie", "Pam", "Nicole"], ["Dennis", "Bob", "Edward"]]
+grouping(events, 1) => [[], ["Alice", "Charlie", "Dennis", "Bob", "Pam", "Edward", "Nicole"]]
+grouping(events, 10) => [["Alice", "Charlie", "Dennis", "Bob", "Pam", "Edward", "Nicole"], []]
+Complexity Variable:
+E = number of events
+
+Answer
+===========
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Solution
+{
+    static void Main(string[] args)
+    {
+        var events = new List<string[]>
+        {
+            new[] { "CONNECT", "Alice", "Bob" },
+            new[] { "DISCONNECT", "Bob", "Alice" },
+            new[] { "CONNECT", "Alice", "Charlie" },
+            new[] { "CONNECT", "Dennis", "Bob" },
+            new[] { "CONNECT", "Pam", "Dennis" },
+            new[] { "DISCONNECT", "Pam", "Dennis" },
+            new[] { "CONNECT", "Pam", "Dennis" },
+            new[] { "CONNECT", "Edward", "Bob" },
+            new[] { "CONNECT", "Dennis", "Charlie" },
+            new[] { "CONNECT", "Alice", "Nicole" },
+            new[] { "CONNECT", "Pam", "Edward" },
+            new[] { "DISCONNECT", "Dennis", "Charlie" },
+            new[] { "CONNECT", "Dennis", "Edward" },
+            new[] { "CONNECT", "Charlie", "Bob" }
+        };
+
+        var result = Grouping(events, 3);
+        Console.WriteLine("Users with less than 3 connections: [" + string.Join(", ", result.Item1) + "]");
+        Console.WriteLine("Users with 3 or more connections: [" + string.Join(", ", result.Item2) + "]");
+    }
+
+    static (List<string>, List<string>) Grouping(List<string[]> events, int N)
+    {
+        var connections = new Dictionary<string, HashSet<string>>();
+
+        foreach (var e in events)
+        {
+            var action = e[0];
+            var user1 = e[1];
+            var user2 = e[2];
+
+            if (action == "CONNECT")
+            {
+                if (!connections.ContainsKey(user1))
+                {
+                    connections[user1] = new HashSet<string>();
+                }
+                if (!connections.ContainsKey(user2))
+                {
+                    connections[user2] = new HashSet<string>();
+                }
+
+                connections[user1].Add(user2);
+                connections[user2].Add(user1);
+            }
+            else if (action == "DISCONNECT")
+            {
+                if (connections.ContainsKey(user1))
+                {
+                    connections[user1].Remove(user2);
+                }
+                if (connections.ContainsKey(user2))
+                {
+                    connections[user2].Remove(user1);
+                }
+            }
+        }
+
+        var lessThanN = new List<string>();
+        var greaterOrEqualN = new List<string>();
+
+        foreach (var user in connections)
+        {
+            if (user.Value.Count < N)
+            {
+                lessThanN.Add(user.Key);
+            }
+            else
+            {
+                greaterOrEqualN.Add(user.Key);
+            }
+        }
+
+        return (lessThanN, greaterOrEqualN);
+    }
+}

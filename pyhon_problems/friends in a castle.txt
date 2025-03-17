@@ -1,0 +1,174 @@
+You are with your friends in a castle, where there are multiple rooms named after flowers. Some of the rooms contain treasures - we call them the treasure rooms.
+ 
+Each room contains a single instruction that tells you which room to go to next.
+ 
+*** instructions_1 and treasure_rooms_1 ***
+ 
+lily* ---------      daisy  sunflower
+               |        |     |
+               v        v     v
+jasmin --> tulip*      violet* ----> rose* -->
+            ^    |      ^             ^       |
+            |    |      |             |       |
+            ------    iris            ---------
+ 
+* denotes a treasure room, e.g., rose is a treasure room, but jasmin isn't.
+ 
+This is given as a list of pairs of (source_room, destination_room)
+ 
+instructions_1 = [ 
+    ["jasmin", "tulip"],
+    ["lily", "tulip"],
+    ["tulip", "tulip"], 
+    ["rose", "rose"],
+    ["violet", "rose"], 
+    ["sunflower", "violet"],
+    ["daisy", "violet"],
+    ["iris", "violet"]
+]
+ 
+treasure_rooms_1 = ["lily", "tulip", "violet", "rose"]
+ 
+Write a function that takes two parameters as input:
+* a list of instructions represented as pairs of (source_room, destination_room), and
+* a list containing the treasure rooms,
+ 
+and returns a collection of all the rooms that satisfy the following two conditions:
+* at least two *other* rooms have instructions pointing to this room
+* this room's instruction immediately points to a treasure room
+ 
+filter_rooms(instructions_1, treasure_rooms_1) => ["tulip", "violet"]
+* tulip can be accessed from rooms lily and jasmin. Tulip's instruction points to a treasure room (tulip itself)
+* violet can be accessed from daisy, sunflower and iris. Violet's instruction points to a treasure room (rose)
+ 
+Additional inputs
+ 
+treasure_rooms_2 = ["lily", "jasmin", "violet"]  
+ 
+filter_rooms(instructions_1, treasure_rooms_2) => []
+* none of the rooms reachable from tulip or violet are treasure rooms
+ 
+*** instructions_2 and treasure_rooms_3 ***
+ 
+lily ---------          --------
+              |          |      |
+              v          v      |
+jasmin --> tulip ---> violet*--^  
+ 
+instructions_2 = [ 
+    ["jasmin", "tulip"],
+    ["lily", "tulip"],
+    ["tulip", "violet"],
+    ["violet", "violet"]       
+]
+ 
+treasure_rooms_3 = ["violet"]
+ 
+filter_rooms(instructions_2, treasure_rooms_3) => [tulip]
+* tulip can be accessed from rooms lily and jasmin. Tulip's instruction points to a treasure room (violet)
+ 
+All the test cases: 
+filter_rooms(instructions_1, treasure_rooms_1)    => ["tulip", "violet"]
+filter_rooms(instructions_1, treasure_rooms_2)    => [] 
+filter_rooms(instructions_2, treasure_rooms_3)    => [tulip]
+ 
+Complexity Analysis variables:
+T: number of treasure rooms
+I: number of instructions given
+ 
+ 
+*/
+using System;
+using System.Collections.Generic;
+using System.Linq;
+ 
+class Solution {
+    static void Main(String[] args) {
+        String[][] instructions_1 = new String[][] {
+            new String[] {"jasmin", "tulip"},
+            new String[] {"lily", "tulip"},
+            new String[] {"tulip", "tulip"},
+            new String[] {"rose", "rose"},
+            new String[] {"violet", "rose"},
+            new String[] {"sunflower", "violet"},
+            new String[] {"daisy", "violet"},
+            new String[] {"iris", "violet"}
+        };
+ 
+        String[][] instructions_2 = new String[][] {
+            new String[] {"jasmin", "tulip"},
+            new String[] {"lily", "tulip"},
+            new String[] {"tulip", "violet"}, 
+            new String[] {"violet", "violet"}	
+        };
+ 
+        String[] treasure_rooms_1 = new String[] {"lily", "tulip", "violet", "rose"};
+        String[] treasure_rooms_2 = new String[] {"lily", "jasmin", "violet"};
+        String[] treasure_rooms_3 = new String[] {"violet"};
+ 
+ 
+    }
+}
+
+Answer
+======================
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Program
+{
+    static void Main()
+    {
+        var instructions1 = new List<Tuple<string, string>>
+        {
+            Tuple.Create("jasmin", "tulip"),
+            Tuple.Create("lily", "tulip"),
+            Tuple.Create("tulip", "tulip"),
+            Tuple.Create("rose", "rose"),
+            Tuple.Create("violet", "rose"),
+            Tuple.Create("sunflower", "violet"),
+            Tuple.Create("daisy", "violet"),
+            Tuple.Create("iris", "violet")
+        };
+        
+        var treasureRooms1 = new List<string> { "lily", "tulip", "violet", "rose" };
+        
+        var result = FilterRooms(instructions1, treasureRooms1);
+        Console.WriteLine(string.Join(", ", result)); // Output: tulip, violet
+    }
+    
+    static List<string> FilterRooms(List<Tuple<string, string>> instructions, List<string> treasureRooms)
+    {
+        var roomToNextRoom = new Dictionary<string, List<string>>();
+        var nextRoomToRooms = new Dictionary<string, List<string>>();
+        
+        foreach (var instruction in instructions)
+        {
+            var sourceRoom = instruction.Item1;
+            var destinationRoom = instruction.Item2;
+            
+            if (!roomToNextRoom.ContainsKey(sourceRoom))
+                roomToNextRoom[sourceRoom] = new List<string>();
+            roomToNextRoom[sourceRoom].Add(destinationRoom);
+            
+            if (!nextRoomToRooms.ContainsKey(destinationRoom))
+                nextRoomToRooms[destinationRoom] = new List<string>();
+            nextRoomToRooms[destinationRoom].Add(sourceRoom);
+        }
+        
+        var result = new List<string>();
+        
+        foreach (var nextRoom in nextRoomToRooms)
+        {
+            var destinationRoom = nextRoom.Key;
+            var sourceRooms = nextRoom.Value;
+            
+            if (sourceRooms.Count >= 2 && treasureRooms.Contains(roomToNextRoom[destinationRoom].First()))
+                result.Add(destinationRoom);
+        }
+        
+        return result;
+    }
+}
